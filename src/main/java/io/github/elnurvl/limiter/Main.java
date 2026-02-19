@@ -1,4 +1,4 @@
-package io.github.elnurvl.java;
+package io.github.elnurvl.limiter;
 
 /** Application entry point. */
 public final class Main {
