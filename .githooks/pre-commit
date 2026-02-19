@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -e
+
+echo "Running pre-commit checks..."
+
+source "$(dirname "$0")/checks.sh"
+
+# Re-stage any files that spotless reformatted
+git diff --name-only | xargs -r git add

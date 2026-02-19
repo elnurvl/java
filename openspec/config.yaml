@@ -1,0 +1,21 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Java 25+, no framework
+  Use conventional commits
+  Testing: JUnit, Mockito, assertj
+  Domain: matching the branch name
+  No change on main branch. New branch per independent project.
+
+rules:
+  proposal:
+   - Keep proposals under 500 words
+   - Always include a "Non-goals" section
+  specs:
+    - Use EARS notation for requirements
+    - Use Given/When/Then format for scenarios
+    - Reference existing patterns before inventing new ones
+  design:
+    - Use Mermaid syntax for diagrams (charts, UML, ER, etc.)
+    - Include sequence diagrams for complex flows
+
