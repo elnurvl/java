@@ -34,12 +34,55 @@ class ConcurrencyTest {
   }
 
   @Test
-  void concurrentDifferentClientsNoInterference() throws InterruptedException {
+  void tokenBucketConcurrentDifferentClients() throws InterruptedException {
     int limit = 10;
-    int clientCount = 10;
     var strategy = new TokenBucketStrategy(limit, 1, System::nanoTime);
-    int threadsPerClient = limit;
+    hammerDifferentClients(strategy, limit, 10);
+  }
 
+  @Test
+  void fixedWindowConcurrentDifferentClients() throws InterruptedException {
+    int limit = 10;
+    var strategy = new FixedWindowStrategy(limit, Duration.ofMinutes(1), System::nanoTime);
+    hammerDifferentClients(strategy, limit, 10);
+  }
+
+  private int hammerSameClient(Strategy strategy, String clientId, int threadCount)
+      throws InterruptedException {
+    var ready = new CountDownLatch(threadCount);
+    var start = new CountDownLatch(1);
+    var allowed = new AtomicInteger(0);
+
+    try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+      for (int i = 0; i < threadCount; i++) {
+        executor.submit(
+            () -> {
+              ready.countDown();
+              try {
+                start.await();
+              } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+              }
+              Result result = strategy.tryAcquire(clientId);
+              if (result.allowed()) {
+                allowed.incrementAndGet();
+              }
+            });
+      }
+
+      ready.await();
+      start.countDown();
+      executor.shutdown();
+      executor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS);
+    }
+
+    return allowed.get();
+  }
+
+  private void hammerDifferentClients(Strategy strategy, int limit, int clientCount)
+      throws InterruptedException {
+    int threadsPerClient = limit;
     var ready = new CountDownLatch(clientCount * threadsPerClient);
     var start = new CountDownLatch(1);
     var allowed = new AtomicInteger[clientCount];
@@ -80,38 +123,5 @@ class ConcurrencyTest {
           .as("client-%d should have exactly %d allowed", c, limit)
           .isEqualTo(limit);
     }
-  }
-
-  private int hammerSameClient(Strategy strategy, String clientId, int threadCount)
-      throws InterruptedException {
-    var ready = new CountDownLatch(threadCount);
-    var start = new CountDownLatch(1);
-    var allowed = new AtomicInteger(0);
-
-    try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-      for (int i = 0; i < threadCount; i++) {
-        executor.submit(
-            () -> {
-              ready.countDown();
-              try {
-                start.await();
-              } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-              }
-              Result result = strategy.tryAcquire(clientId);
-              if (result.allowed()) {
-                allowed.incrementAndGet();
-              }
-            });
-      }
-
-      ready.await();
-      start.countDown();
-      executor.shutdown();
-      executor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS);
-    }
-
-    return allowed.get();
   }
 }
