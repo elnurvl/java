@@ -15,6 +15,11 @@ public final class TokenBucketStrategy implements Strategy {
   private final ConcurrentMap<String, Bucket> buckets = new ConcurrentHashMap<>();
 
   /** Creates a token bucket strategy with the given capacity and refill rate (tokens/sec). */
+  public TokenBucketStrategy(int capacity, int refillRate) {
+    this(capacity, refillRate, System::nanoTime);
+  }
+
+  /** Creates a token bucket strategy with the given capacity and refill rate (tokens/sec). */
   public TokenBucketStrategy(int capacity, int refillRate, Clock clock) {
     this.capacity = capacity;
     this.refillRate = refillRate;

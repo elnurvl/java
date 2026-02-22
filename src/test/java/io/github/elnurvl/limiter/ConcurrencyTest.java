@@ -14,7 +14,7 @@ class ConcurrencyTest {
   @Test
   void tokenBucketHammerSameClient() throws InterruptedException {
     int capacity = 100;
-    var strategy = new TokenBucketStrategy(capacity, 1, System::nanoTime);
+    var strategy = new TokenBucketStrategy(capacity, 1);
     int threadCount = 200;
 
     int allowed = hammerSameClient(strategy, "client-A", threadCount);
@@ -25,7 +25,7 @@ class ConcurrencyTest {
   @Test
   void fixedWindowHammerSameClient() throws InterruptedException {
     int maxRequests = 100;
-    var strategy = new FixedWindowStrategy(maxRequests, Duration.ofMinutes(1), System::nanoTime);
+    var strategy = new FixedWindowStrategy(maxRequests, Duration.ofMinutes(1));
     int threadCount = 200;
 
     int allowed = hammerSameClient(strategy, "client-A", threadCount);
@@ -36,14 +36,14 @@ class ConcurrencyTest {
   @Test
   void tokenBucketConcurrentDifferentClients() throws InterruptedException {
     int limit = 10;
-    var strategy = new TokenBucketStrategy(limit, 1, System::nanoTime);
+    var strategy = new TokenBucketStrategy(limit, 1);
     hammerDifferentClients(strategy, limit, 10);
   }
 
   @Test
   void fixedWindowConcurrentDifferentClients() throws InterruptedException {
     int limit = 10;
-    var strategy = new FixedWindowStrategy(limit, Duration.ofMinutes(1), System::nanoTime);
+    var strategy = new FixedWindowStrategy(limit, Duration.ofMinutes(1));
     hammerDifferentClients(strategy, limit, 10);
   }
 

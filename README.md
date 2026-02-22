@@ -23,9 +23,7 @@ _Note: This project has been developed primarily to practice the Spec-Driven Dev
 
 ```java
 // Token Bucket: 10 tokens, refills 2 per second
-var limiter = new RateLimiter(
-    new TokenBucketStrategy(10, 2, System::nanoTime)
-);
+var limiter = new RateLimiter(new TokenBucketStrategy(10, 2));
 
 Result result = limiter.tryAcquire("client-1");
 if (result.allowed()) {
@@ -43,9 +41,8 @@ Tokens refill gradually over time. Allows short bursts up to capacity, then smoo
 
 ```java
 // 100 tokens max, refills 10 per second
-var limiter = new RateLimiter(
-    new TokenBucketStrategy(100, 10, System::nanoTime)
-);
+var limiter = new RateLimiter(new TokenBucketStrategy(100, 10));
+var limiterWithCustomClock = new RateLimiter(new TokenBucketStrategy(100, 10, System::nanoTime));
 ```
 
 | Parameter    | Description                          |
@@ -63,6 +60,10 @@ Counts requests within wall-clock-aligned time windows. Simple and predictable.
 ```java
 // 1000 requests per minute
 var limiter = new RateLimiter(
+    new FixedWindowStrategy(1000, Duration.ofMinutes(1))
+);
+// 1000 requests per minute
+var limiterWithCustomClock = new RateLimiter(
     new FixedWindowStrategy(1000, Duration.ofMinutes(1), System::nanoTime)
 );
 ```

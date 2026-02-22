@@ -14,6 +14,11 @@ public final class FixedWindowStrategy implements Strategy {
   private final ConcurrentMap<String, AtomicLong> windows = new ConcurrentHashMap<>();
 
   /** Creates a fixed window strategy with the given request limit and window duration. */
+  public FixedWindowStrategy(int maxRequests, Duration windowDuration) {
+    this(maxRequests, windowDuration, System::nanoTime);
+  }
+
+  /** Creates a fixed window strategy with the given request limit and window duration. */
   public FixedWindowStrategy(int maxRequests, Duration windowDuration, Clock clock) {
     this.maxRequests = maxRequests;
     this.windowDurationNanos = windowDuration.toNanos();
