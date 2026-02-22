@@ -3,6 +3,7 @@ package io.github.elnurvl.limiter;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /** Token bucket rate limiting with gradual refill and per-client state. */
 public final class TokenBucketStrategy implements Strategy {
@@ -33,6 +34,7 @@ public final class TokenBucketStrategy implements Strategy {
   }
 
   private final class Bucket {
+    private final ReentrantLock lock = new ReentrantLock();
     private int tokens;
     private long lastRefillNanos;
 
@@ -41,13 +43,18 @@ public final class TokenBucketStrategy implements Strategy {
       this.lastRefillNanos = lastRefillNanos;
     }
 
-    synchronized Result tryConsume(long now) {
-      refill(now);
-      if (tokens > 0) {
-        tokens--;
-        return new Result(true, tokens, Duration.ZERO, capacity);
+    Result tryConsume(long now) {
+      lock.lock();
+      try {
+        refill(now);
+        if (tokens > 0) {
+          tokens--;
+          return new Result(true, tokens, Duration.ZERO, capacity);
+        }
+        return new Result(false, 0, timeUntilNextToken(now), capacity);
+      } finally {
+        lock.unlock();
       }
-      return new Result(false, 0, timeUntilNextToken(now), capacity);
     }
 
     private void refill(long now) {

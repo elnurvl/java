@@ -3,7 +3,7 @@ package io.github.elnurvl.limiter;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 /** Fixed window rate limiting with wall-clock-aligned windows and CAS-based concurrency. */
 public final class FixedWindowStrategy implements Strategy {
@@ -11,7 +11,7 @@ public final class FixedWindowStrategy implements Strategy {
   private final int maxRequests;
   private final long windowDurationNanos;
   private final Clock clock;
-  private final ConcurrentMap<String, AtomicLong> windows = new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, AtomicReference<Window>> windows = new ConcurrentHashMap<>();
 
   /** Creates a fixed window strategy with the given request limit and window duration. */
   public FixedWindowStrategy(int maxRequests, Duration windowDuration) {
@@ -27,24 +27,23 @@ public final class FixedWindowStrategy implements Strategy {
 
   @Override
   public Result tryAcquire(String clientId) {
-    AtomicLong state = windows.computeIfAbsent(clientId, k -> new AtomicLong(0));
+    AtomicReference<Window> ref =
+        windows.computeIfAbsent(clientId, k -> new AtomicReference<>(new Window(0, 0)));
     long now = clock.nanoTime();
     long currentWindow = now / windowDurationNanos;
 
     while (true) {
-      long current = state.get();
-      int windowId = (int) (current >>> 32);
-      int counter = (int) (current & 0xFFFFFFFFL);
+      Window current = ref.get();
 
-      if (windowId != (int) currentWindow) {
-        long next = (currentWindow << 32) | 1L;
-        if (state.compareAndSet(current, next)) {
+      if (current.windowId() != currentWindow) {
+        var next = new Window(currentWindow, 1);
+        if (ref.compareAndSet(current, next)) {
           return new Result(true, maxRequests - 1, Duration.ZERO, maxRequests);
         }
-      } else if (counter < maxRequests) {
-        long next = (currentWindow << 32) | (counter + 1L);
-        if (state.compareAndSet(current, next)) {
-          return new Result(true, maxRequests - counter - 1, Duration.ZERO, maxRequests);
+      } else if (current.counter() < maxRequests) {
+        var next = new Window(currentWindow, current.counter() + 1);
+        if (ref.compareAndSet(current, next)) {
+          return new Result(true, maxRequests - current.counter() - 1, Duration.ZERO, maxRequests);
         }
       } else {
         long windowEndNanos = (currentWindow + 1) * windowDurationNanos;
@@ -53,4 +52,6 @@ public final class FixedWindowStrategy implements Strategy {
       }
     }
   }
+
+  private record Window(long windowId, int counter) {}
 }
