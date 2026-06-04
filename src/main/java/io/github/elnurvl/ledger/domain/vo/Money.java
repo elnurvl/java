@@ -2,102 +2,126 @@ package io.github.elnurvl.ledger.domain.vo;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 import java.util.Objects;
 
-/** Non-negative monetary value backed by {@link BigDecimal}. */
-public record Money(BigDecimal value) implements Comparable<Money> {
-  /** The zero amount. */
-  public static final Money ZERO = new Money(0);
+/**
+ * Non-negative monetary value backed by {@link BigDecimal} and tagged with a {@link Currency}.
+ *
+ * <p>The amount is normalized to the currency's minor-unit scale (e.g. 2 fraction digits for USD, 0
+ * for JPY) at construction. This makes equality and ordering scale-insensitive yet consistent, and
+ * gives {@link #allocate(int)} a well-defined unit to split into.
+ */
+public record Money(BigDecimal value, Currency currency) implements Comparable<Money> {
+  /** Currency assumed when a constructor is called without an explicit one. */
+  public static final Currency DEFAULT_CURRENCY = Currency.getInstance("USD");
+
+  /** The zero amount in the {@link #DEFAULT_CURRENCY}. */
+  public static final Money ZERO = new Money(BigDecimal.ZERO);
 
   /**
-   * Validates and normalizes the wrapped value.
+   * Validates and normalizes the amount to the currency's minor-unit scale.
    *
-   * <p>Trailing zeros are stripped so that values which are numerically equal compare equal under
-   * the record's generated {@code equals}/{@code hashCode} (e.g. {@code "3.5"} equals {@code
-   * "3.50"}).
-   *
-   * @throws NullPointerException if {@code value} is {@code null}
+   * @throws NullPointerException if {@code value} or {@code currency} is {@code null}
+   * @throws ArithmeticException if {@code value} has more precision than the currency allows
    * @throws NegativeMoneyException if {@code value} is negative
    */
   public Money {
     Objects.requireNonNull(value, "Money value cannot be null");
+    Objects.requireNonNull(currency, "Currency cannot be null");
+    value = value.setScale(scaleOf(currency), RoundingMode.UNNECESSARY);
     if (value.signum() < 0) {
       throw new NegativeMoneyException();
     }
-    value = value.stripTrailingZeros();
   }
 
   /**
-   * Constructs a {@link Money} from a decimal string.
+   * Constructs a {@link Money} in the {@link #DEFAULT_CURRENCY}.
+   *
+   * @throws NullPointerException if {@code value} is {@code null}
+   * @throws NegativeMoneyException if {@code value} is negative
+   */
+  public Money(BigDecimal value) {
+    this(value, DEFAULT_CURRENCY);
+  }
+
+  /**
+   * Creates a {@link Money} from a decimal string in the given currency.
    *
    * @throws NullPointerException if {@code value} is {@code null}
    * @throws NumberFormatException if {@code value} is not a valid decimal representation
    * @throws NegativeMoneyException if {@code value} is negative
    */
-  public Money(String value) {
-    this(new BigDecimal(Objects.requireNonNull(value, "Money value cannot be null")));
+  public static Money of(String value, Currency currency) {
+    return new Money(
+        new BigDecimal(Objects.requireNonNull(value, "Money value cannot be null")), currency);
   }
 
   /**
-   * Constructs a {@link Money} from an integer.
+   * Creates a {@link Money} from a decimal string in the {@link #DEFAULT_CURRENCY}.
    *
+   * @throws NullPointerException if {@code value} is {@code null}
+   * @throws NumberFormatException if {@code value} is not a valid decimal representation
    * @throws NegativeMoneyException if {@code value} is negative
    */
-  public Money(int value) {
-    this(BigDecimal.valueOf(value));
+  public static Money of(String value) {
+    return of(value, DEFAULT_CURRENCY);
   }
 
   /**
-   * Constructs a {@link Money} from a double.
+   * Returns a new {@link Money} representing this plus {@code other}.
    *
-   * @throws NegativeMoneyException if {@code value} is negative
+   * @throws IllegalArgumentException if {@code other} is in a different currency
    */
-  public Money(double value) {
-    this(BigDecimal.valueOf(value));
-  }
-
-  /** Returns a new {@link Money} representing this plus {@code other}. */
   public Money add(Money other) {
-    return new Money(value.add(other.value));
+    requireSameCurrency(other);
+    return new Money(value.add(other.value), currency);
   }
 
   /**
    * Returns a new {@link Money} representing this minus {@code other}.
    *
+   * @throws IllegalArgumentException if {@code other} is in a different currency
    * @throws NegativeMoneyException if the result would be negative
    */
   public Money subtract(Money other) {
-    return new Money(value.subtract(other.value));
+    requireSameCurrency(other);
+    return new Money(value.subtract(other.value), currency);
   }
 
   /**
    * Returns a new {@link Money} scaled by {@code factor} (e.g. a tax or interest rate).
    *
    * @throws NullPointerException if {@code factor} is {@code null}
+   * @throws ArithmeticException if the product has more precision than the currency allows
    * @throws NegativeMoneyException if {@code factor} is negative
    */
   public Money multiplyBy(BigDecimal factor) {
-    return new Money(value.multiply(Objects.requireNonNull(factor, "Factor cannot be null")));
+    return new Money(
+        value.multiply(Objects.requireNonNull(factor, "Factor cannot be null")), currency);
   }
 
   /**
-   * Orders by numeric value. Consistent with {@code equals}: {@code compareTo} returns {@code 0} if
-   * and only if the two amounts are equal.
+   * Defines a total order over all amounts, by currency code first and then amount. This is a
+   * deterministic ordering for sorting and sorted collections, <em>not</em> an economic comparison:
+   * cross-currency ordering is lexical (e.g. {@code AZN} sorts before {@code USD}) and does not
+   * imply relative worth. Consistent with {@code equals}: returns {@code 0} if and only if the two
+   * are equal.
    */
   @Override
   public int compareTo(Money other) {
-    return value.compareTo(other.value);
+    int byCurrency = currency.getCurrencyCode().compareTo(other.currency.getCurrencyCode());
+    return byCurrency != 0 ? byCurrency : value.compareTo(other.value);
   }
 
   /**
    * Splits this amount into {@code parts} shares whose sum is exactly this amount — no value is
-   * created or lost. Any indivisible remainder is distributed one unit at a time to the earlier
-   * shares, so the first shares may be one unit larger than the last.
-   *
-   * <p>The unit is determined by this amount's own scale ({@code 10}<sup>{@code -scale}</sup>);
-   * e.g. {@code 10.01} splits into hundredths whereas a bare {@code 10} splits into whole units.
+   * created or lost. Any indivisible remainder is distributed one minor unit at a time to the
+   * earlier shares, so the first shares may be one unit larger than the last. Each share carries
+   * this amount's currency.
    *
    * @throws IllegalArgumentException if {@code parts} is not positive
    */
@@ -105,7 +129,7 @@ public record Money(BigDecimal value) implements Comparable<Money> {
     if (parts <= 0) {
       throw new IllegalArgumentException("Parts must be positive");
     }
-    int scale = Math.max(value.scale(), 0);
+    int scale = value.scale();
     BigInteger total = value.scaleByPowerOfTen(scale).toBigIntegerExact();
     BigInteger count = BigInteger.valueOf(parts);
     BigInteger base = total.divide(count);
@@ -113,8 +137,19 @@ public record Money(BigDecimal value) implements Comparable<Money> {
     List<Money> shares = new ArrayList<>(parts);
     for (int i = 0; i < parts; i++) {
       BigInteger units = i < remainder ? base.add(BigInteger.ONE) : base;
-      shares.add(new Money(new BigDecimal(units).scaleByPowerOfTen(-scale)));
+      shares.add(new Money(new BigDecimal(units).scaleByPowerOfTen(-scale), currency));
     }
     return List.copyOf(shares);
+  }
+
+  private void requireSameCurrency(Money other) {
+    if (!currency.equals(other.currency)) {
+      throw new IllegalArgumentException(
+          "Currency mismatch: " + currency + " vs " + other.currency);
+    }
+  }
+
+  private static int scaleOf(Currency currency) {
+    return Math.max(currency.getDefaultFractionDigits(), 0);
   }
 }
