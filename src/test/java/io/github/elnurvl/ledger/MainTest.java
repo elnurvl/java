@@ -1,4 +1,4 @@
-package io.github.elnurvl.java;
+package io.github.elnurvl.ledger;
 
 import org.junit.jupiter.api.Test;
 
