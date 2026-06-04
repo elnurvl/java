@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /** Tests for {@link Money}. */
@@ -140,5 +141,43 @@ public class MoneyTest {
   @Test
   void compareTo_isZeroForEqualValuesIgnoringScale() {
     assertEquals(0, new Money("3.5").compareTo(new Money("3.50")));
+  }
+
+  @Test
+  void allocate_splitsEvenly() {
+    List<Money> shares = new Money(9).allocate(3);
+
+    assertEquals(List.of(new Money(3), new Money(3), new Money(3)), shares);
+  }
+
+  @Test
+  void allocate_distributesRemainderToEarlierShares() {
+    List<Money> shares = new Money(10).allocate(3);
+
+    assertEquals(List.of(new Money(4), new Money(3), new Money(3)), shares);
+  }
+
+  @Test
+  void allocate_splitsAtAmountScale() {
+    List<Money> shares = new Money("10.01").allocate(3);
+
+    assertEquals(List.of(new Money("3.34"), new Money("3.34"), new Money("3.33")), shares);
+  }
+
+  @Test
+  void allocate_conservesTotal() {
+    Money original = new Money("10.01");
+
+    Money sum = original.allocate(3).stream().reduce(Money.ZERO, Money::add);
+
+    assertEquals(original, sum);
+  }
+
+  @Test
+  void allocate_throwsWhenPartsNotPositive() {
+    Money money = new Money(10);
+
+    Exception ex = assertThrows(IllegalArgumentException.class, () -> money.allocate(0));
+    assertEquals("Parts must be positive", ex.getMessage());
   }
 }

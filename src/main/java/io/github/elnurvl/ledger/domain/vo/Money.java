@@ -1,6 +1,9 @@
 package io.github.elnurvl.ledger.domain.vo;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /** Non-negative monetary value backed by {@link BigDecimal}. */
@@ -86,5 +89,32 @@ public record Money(BigDecimal value) implements Comparable<Money> {
   @Override
   public int compareTo(Money other) {
     return value.compareTo(other.value);
+  }
+
+  /**
+   * Splits this amount into {@code parts} shares whose sum is exactly this amount — no value is
+   * created or lost. Any indivisible remainder is distributed one unit at a time to the earlier
+   * shares, so the first shares may be one unit larger than the last.
+   *
+   * <p>The unit is determined by this amount's own scale ({@code 10}<sup>{@code -scale}</sup>);
+   * e.g. {@code 10.01} splits into hundredths whereas a bare {@code 10} splits into whole units.
+   *
+   * @throws IllegalArgumentException if {@code parts} is not positive
+   */
+  public List<Money> allocate(int parts) {
+    if (parts <= 0) {
+      throw new IllegalArgumentException("Parts must be positive");
+    }
+    int scale = Math.max(value.scale(), 0);
+    BigInteger total = value.scaleByPowerOfTen(scale).toBigIntegerExact();
+    BigInteger count = BigInteger.valueOf(parts);
+    BigInteger base = total.divide(count);
+    int remainder = total.subtract(base.multiply(count)).intValueExact();
+    List<Money> shares = new ArrayList<>(parts);
+    for (int i = 0; i < parts; i++) {
+      BigInteger units = i < remainder ? base.add(BigInteger.ONE) : base;
+      shares.add(new Money(new BigDecimal(units).scaleByPowerOfTen(-scale)));
+    }
+    return List.copyOf(shares);
   }
 }
