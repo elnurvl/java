@@ -13,12 +13,12 @@ public record Money(BigDecimal value) {
    * "3.50"}).
    *
    * @throws NullPointerException if {@code value} is {@code null}
-   * @throws IllegalArgumentException if {@code value} is negative
+   * @throws NegativeMoneyException if {@code value} is negative
    */
   public Money {
     Objects.requireNonNull(value, "Money value cannot be null");
     if (value.signum() < 0) {
-      throw new IllegalArgumentException("Money cannot be negative");
+      throw new NegativeMoneyException();
     }
     value = value.stripTrailingZeros();
   }
@@ -28,7 +28,7 @@ public record Money(BigDecimal value) {
    *
    * @throws NullPointerException if {@code value} is {@code null}
    * @throws NumberFormatException if {@code value} is not a valid decimal representation
-   * @throws IllegalArgumentException if {@code value} is negative
+   * @throws NegativeMoneyException if {@code value} is negative
    */
   public Money(String value) {
     this(new BigDecimal(Objects.requireNonNull(value, "Money value cannot be null")));
@@ -37,7 +37,7 @@ public record Money(BigDecimal value) {
   /**
    * Constructs a {@link Money} from an integer.
    *
-   * @throws IllegalArgumentException if {@code value} is negative
+   * @throws NegativeMoneyException if {@code value} is negative
    */
   public Money(int value) {
     this(BigDecimal.valueOf(value));
@@ -46,7 +46,7 @@ public record Money(BigDecimal value) {
   /**
    * Constructs a {@link Money} from a double.
    *
-   * @throws IllegalArgumentException if {@code value} is negative
+   * @throws NegativeMoneyException if {@code value} is negative
    */
   public Money(double value) {
     this(BigDecimal.valueOf(value));
@@ -60,7 +60,7 @@ public record Money(BigDecimal value) {
   /**
    * Returns a new {@link Money} representing this minus {@code other}.
    *
-   * @throws IllegalArgumentException if the result would be negative
+   * @throws NegativeMoneyException if the result would be negative
    */
   public Money subtract(Money other) {
     return new Money(value.subtract(other.value));

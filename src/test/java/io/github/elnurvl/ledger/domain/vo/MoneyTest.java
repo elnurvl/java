@@ -44,7 +44,7 @@ public class MoneyTest {
 
   @Test
   void throwsIfMoneyIsNegative() {
-    Exception ex = assertThrows(IllegalArgumentException.class, () -> new Money(-1));
+    Exception ex = assertThrows(NegativeMoneyException.class, () -> new Money(-1));
     assertEquals("Money cannot be negative", ex.getMessage());
   }
 
