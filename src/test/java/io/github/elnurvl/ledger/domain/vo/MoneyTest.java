@@ -101,4 +101,44 @@ public class MoneyTest {
 
     assertEquals(0, diff.value().compareTo(BigDecimal.ZERO));
   }
+
+  @Test
+  void zero_isZeroAmount() {
+    assertEquals(0, Money.ZERO.value().compareTo(BigDecimal.ZERO));
+  }
+
+  @Test
+  void multiplyBy_scalesValue() {
+    Money money = new Money("2.5");
+
+    Money scaled = money.multiplyBy(new BigDecimal("4"));
+
+    assertEquals(new Money(10), scaled);
+  }
+
+  @Test
+  void multiplyBy_throwsWhenFactorIsNull() {
+    Money money = new Money(1);
+
+    Exception ex = assertThrows(NullPointerException.class, () -> money.multiplyBy(null));
+    assertEquals("Factor cannot be null", ex.getMessage());
+  }
+
+  @Test
+  void multiplyBy_throwsWhenFactorIsNegative() {
+    Money money = new Money(1);
+
+    assertThrows(NegativeMoneyException.class, () -> money.multiplyBy(new BigDecimal("-1")));
+  }
+
+  @Test
+  void compareTo_ordersByValue() {
+    assertTrue(new Money(2).compareTo(new Money(3)) < 0);
+    assertTrue(new Money(5).compareTo(new Money(3)) > 0);
+  }
+
+  @Test
+  void compareTo_isZeroForEqualValuesIgnoringScale() {
+    assertEquals(0, new Money("3.5").compareTo(new Money("3.50")));
+  }
 }

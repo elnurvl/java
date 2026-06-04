@@ -4,7 +4,10 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 /** Non-negative monetary value backed by {@link BigDecimal}. */
-public record Money(BigDecimal value) {
+public record Money(BigDecimal value) implements Comparable<Money> {
+  /** The zero amount. */
+  public static final Money ZERO = new Money(0);
+
   /**
    * Validates and normalizes the wrapped value.
    *
@@ -64,5 +67,24 @@ public record Money(BigDecimal value) {
    */
   public Money subtract(Money other) {
     return new Money(value.subtract(other.value));
+  }
+
+  /**
+   * Returns a new {@link Money} scaled by {@code factor} (e.g. a tax or interest rate).
+   *
+   * @throws NullPointerException if {@code factor} is {@code null}
+   * @throws NegativeMoneyException if {@code factor} is negative
+   */
+  public Money multiplyBy(BigDecimal factor) {
+    return new Money(value.multiply(Objects.requireNonNull(factor, "Factor cannot be null")));
+  }
+
+  /**
+   * Orders by numeric value. Consistent with {@code equals}: {@code compareTo} returns {@code 0} if
+   * and only if the two amounts are equal.
+   */
+  @Override
+  public int compareTo(Money other) {
+    return value.compareTo(other.value);
   }
 }
