@@ -69,4 +69,36 @@ public class MoneyTest {
     // Assert
     assertTrue(result);
   }
+
+  @Test
+  void equals_ignoresScale() {
+    // Arrange
+    Money money1 = new Money("3.5");
+    Money money2 = new Money("3.50");
+
+    // Assert
+    assertEquals(money1, money2);
+    assertEquals(money1.hashCode(), money2.hashCode());
+  }
+
+  @Test
+  void throws_whenBigDecimalIsNull() {
+    Exception ex = assertThrows(NullPointerException.class, () -> new Money((BigDecimal) null));
+    assertEquals("Money value cannot be null", ex.getMessage());
+  }
+
+  @Test
+  void throws_whenStringIsNull() {
+    Exception ex = assertThrows(NullPointerException.class, () -> new Money((String) null));
+    assertEquals("Money value cannot be null", ex.getMessage());
+  }
+
+  @Test
+  void subtract_returnsZero_whenEqual() {
+    Money money = new Money(2);
+
+    Money diff = money.subtract(new Money(2));
+
+    assertEquals(0, diff.value().compareTo(BigDecimal.ZERO));
+  }
 }
