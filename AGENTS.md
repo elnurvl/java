@@ -20,7 +20,7 @@ This branch is a **modular monolith** following Domain-Driven Design: a single d
 assembly composed of independent Gradle modules.
 
 - **Build system:** Gradle 9.3.1, multi-module. Shared module config lives in a convention
-  plugin (`buildSrc/src/main/groovy/io.github.elnurvl.java-conventions.gradle`) that each module
+  plugin (`buildSrc/src/main/kotlin/io.github.elnurvl.java-conventions.gradle.kts`) that each module
   applies; the root `build.gradle` only owns aggregated coverage (`jacoco-report-aggregation`).
 - **Modules:**
   - `shared-kernel` — shared kernel (`java-library`) with building blocks reused across contexts,
