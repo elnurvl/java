@@ -1,4 +1,4 @@
-package io.github.elnurvl.ledger.domain.vo;
+package io.github.elnurvl.ddd.shared;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -17,14 +17,14 @@ public class MoneyTest {
   private static final Currency JPY = Currency.getInstance("JPY");
 
   @Test
-  void backedByBigDecimal() {
+  void givenAnAmount_whenMoneyCreated_thenCarriesThatAmount() {
     Money money = Money.of("3.5");
 
     assertEquals(0, money.value().compareTo(new BigDecimal("3.5")));
   }
 
   @Test
-  void addReturnsResultMoney() {
+  void givenTwoAmounts_whenAdded_thenSumsTheAmounts() {
     Money money = Money.of("2");
 
     Money summed = money.add(Money.of("3"));
@@ -33,7 +33,7 @@ public class MoneyTest {
   }
 
   @Test
-  void subtractReturnsResultMoney() {
+  void givenTwoAmounts_whenSubtracted_thenSubtractsTheAmounts() {
     Money money = Money.of("3");
 
     Money diff = money.subtract(Money.of("2"));
@@ -42,7 +42,7 @@ public class MoneyTest {
   }
 
   @Test
-  void subtractThrowsErrorIfResultIsNegative() {
+  void givenResultWouldBeNegative_whenSubtracted_thenRejected() {
     Money money = Money.of("2");
 
     Exception ex =
@@ -51,20 +51,20 @@ public class MoneyTest {
   }
 
   @Test
-  void throwsIfMoneyIsNegative() {
+  void givenNegativeAmount_whenMoneyCreated_thenRejected() {
     Exception ex = assertThrows(NegativeMoneyException.class, () -> Money.of("-1"));
     assertEquals("Money cannot be negative", ex.getMessage());
   }
 
   @Test
-  void constructsFromFractionalString() {
+  void givenFractionalAmount_whenMoneyCreated_thenCarriesThatAmount() {
     Money money = Money.of("0.1");
 
     assertEquals(0, money.value().compareTo(new BigDecimal("0.1")));
   }
 
   @Test
-  void equals_sameValue() {
+  void givenSameAmountAndCurrency_whenComparedForEquality_thenEqual() {
     Money money1 = Money.of("1");
     Money money2 = Money.of("1");
 
@@ -72,7 +72,7 @@ public class MoneyTest {
   }
 
   @Test
-  void equals_ignoresScale() {
+  void givenSameAmountWrittenWithDifferentPrecision_whenComparedForEquality_thenEqual() {
     Money money1 = Money.of("3.5");
     Money money2 = Money.of("3.50");
 
@@ -81,19 +81,19 @@ public class MoneyTest {
   }
 
   @Test
-  void throws_whenBigDecimalIsNull() {
+  void givenNoAmount_whenMoneyCreated_thenRejected() {
     Exception ex = assertThrows(NullPointerException.class, () -> new Money((BigDecimal) null));
     assertEquals("Money value cannot be null", ex.getMessage());
   }
 
   @Test
-  void throws_whenStringIsNull() {
+  void givenNoAmount_whenMoneyParsed_thenRejected() {
     Exception ex = assertThrows(NullPointerException.class, () -> Money.of(null));
     assertEquals("Money value cannot be null", ex.getMessage());
   }
 
   @Test
-  void subtract_returnsZero_whenEqual() {
+  void givenEqualAmounts_whenSubtracted_thenYieldsZero() {
     Money money = Money.of("2");
 
     Money diff = money.subtract(Money.of("2"));
@@ -102,12 +102,12 @@ public class MoneyTest {
   }
 
   @Test
-  void zero_isZeroAmount() {
+  void givenZeroMoney_whenInspected_thenAmountIsZero() {
     assertEquals(0, Money.ZERO.value().compareTo(BigDecimal.ZERO));
   }
 
   @Test
-  void multiplyBy_scalesValue() {
+  void givenFactor_whenMultiplied_thenScalesTheAmount() {
     Money money = Money.of("2.5");
 
     Money scaled = money.multiplyBy(new BigDecimal("4"));
@@ -116,7 +116,7 @@ public class MoneyTest {
   }
 
   @Test
-  void multiplyBy_throwsWhenFactorIsNull() {
+  void givenNoFactor_whenMultiplied_thenRejected() {
     Money money = Money.of("1");
 
     Exception ex = assertThrows(NullPointerException.class, () -> money.multiplyBy(null));
@@ -124,39 +124,39 @@ public class MoneyTest {
   }
 
   @Test
-  void multiplyBy_throwsWhenFactorIsNegative() {
+  void givenNegativeFactor_whenMultiplied_thenRejected() {
     Money money = Money.of("1");
 
     assertThrows(NegativeMoneyException.class, () -> money.multiplyBy(new BigDecimal("-1")));
   }
 
   @Test
-  void compareTo_ordersByValue() {
+  void givenAmountsInSameCurrency_whenOrdered_thenSortedByAmount() {
     assertTrue(Money.of("2").compareTo(Money.of("3")) < 0);
     assertTrue(Money.of("5").compareTo(Money.of("3")) > 0);
   }
 
   @Test
-  void compareTo_isZeroForEqualValuesIgnoringScale() {
+  void givenSameAmountWrittenWithDifferentPrecision_whenOrdered_thenRanksEqual() {
     assertEquals(0, Money.of("3.5").compareTo(Money.of("3.50")));
   }
 
   @Test
-  void allocate_splitsEvenly() {
+  void givenAmountDivisibleIntoShares_whenAllocated_thenSharesAreEqual() {
     List<Money> shares = Money.of("9").allocate(3);
 
     assertEquals(List.of(Money.of("3"), Money.of("3"), Money.of("3")), shares);
   }
 
   @Test
-  void allocate_distributesRemainderToEarlierShares() {
+  void givenAmountWithRemainder_whenAllocated_thenRemainderGoesToEarlierShares() {
     List<Money> shares = Money.of("10").allocate(3);
 
     assertEquals(List.of(Money.of("3.34"), Money.of("3.33"), Money.of("3.33")), shares);
   }
 
   @Test
-  void allocate_conservesTotal() {
+  void givenAnAmount_whenAllocated_thenSharesConserveTheTotal() {
     Money original = Money.of("10.01");
 
     Money sum = original.allocate(3).stream().reduce(Money.ZERO, Money::add);
@@ -165,7 +165,7 @@ public class MoneyTest {
   }
 
   @Test
-  void allocate_throwsWhenPartsNotPositive() {
+  void givenNonPositiveParts_whenAllocated_thenRejected() {
     Money money = Money.of("10");
 
     Exception ex = assertThrows(IllegalArgumentException.class, () -> money.allocate(0));
@@ -173,14 +173,14 @@ public class MoneyTest {
   }
 
   @Test
-  void constructs_withDefaultCurrencyUsd() {
+  void givenNoCurrency_whenMoneyCreated_thenDefaultsToUsd() {
     Money money = Money.of("4");
 
     assertEquals(USD, money.currency());
   }
 
   @Test
-  void normalizesToCurrencyScale() {
+  void givenAnAmount_whenMoneyCreated_thenNormalizedToCurrencyMinorUnit() {
     Money usd = Money.of("3.5", USD);
     Money jpy = Money.of("3", JPY);
 
@@ -189,7 +189,7 @@ public class MoneyTest {
   }
 
   @Test
-  void creates_inGivenCurrency() {
+  void givenCurrency_whenMoneyCreated_thenCarriesThatCurrency() {
     Money money = Money.of("2.5", AZN);
 
     assertEquals(AZN, money.currency());
@@ -197,14 +197,14 @@ public class MoneyTest {
   }
 
   @Test
-  void allocate_keepsCurrency() {
+  void givenMoneyInCurrency_whenAllocated_thenSharesKeepTheCurrency() {
     List<Money> shares = Money.of("10", AZN).allocate(3);
 
     assertEquals(AZN, shares.get(0).currency());
   }
 
   @Test
-  void compareTo_ordersByCurrencyThenAmount() {
+  void givenAmountsInDifferentCurrencies_whenOrdered_thenSortedByCurrencyThenAmount() {
     Money usd = Money.of("3", USD);
     Money azn = Money.of("3", AZN);
 
@@ -215,7 +215,7 @@ public class MoneyTest {
   }
 
   @Test
-  void add_throws_ifCurrenciesMismatch() {
+  void givenDifferentCurrencies_whenAdded_thenRejected() {
     Money money = Money.of("3", USD);
     Money money2 = Money.of("3", AZN);
 
@@ -223,7 +223,7 @@ public class MoneyTest {
   }
 
   @Test
-  void notEquals_acrossCurrencies() {
+  void givenSameAmountInDifferentCurrencies_whenComparedForEquality_thenNotEqual() {
     Money usd = Money.of("1", USD);
     Money azn = Money.of("1", AZN);
 
@@ -231,7 +231,7 @@ public class MoneyTest {
   }
 
   @Test
-  void toString_includesAmountAndCurrency() {
+  void givenMoney_whenRendered_thenShowsAmountAndCurrency() {
     String text = Money.of("3.5", USD).toString();
 
     assertTrue(text.contains("3.50"));

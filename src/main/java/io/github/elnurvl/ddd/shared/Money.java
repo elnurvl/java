@@ -1,4 +1,4 @@
-package io.github.elnurvl.ledger.domain.vo;
+package io.github.elnurvl.ddd.shared;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
