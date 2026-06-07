@@ -3,7 +3,7 @@
 ```shell
 ./gradlew build          # Build and run tests
 ./gradlew test           # Run tests only
-./gradlew jacocoTestReport  # Generate coverage report
+./gradlew testCodeCoverageReport  # Generate aggregated coverage report (all modules)
 ```
 
 ## Code style
@@ -29,11 +29,13 @@ The repository includes pre-configured Git hooks in `.githooks/` that run automa
 4. **Coverage** — verifies instruction coverage is at least 80%
 5. **Commit message** — enforces Conventional Commits format
 
-To enable the hooks, configure Git to use the `.githooks` directory:
+After cloning, enable the hooks once by pointing Git at the `.githooks` directory:
 
 ```bash
 git config core.hooksPath .githooks
 ```
+
+This setting lives in your local `.git/config` (which is not version-controlled), so every fresh clone needs it once.
 
 ## Commit messages
 The repo follows the [Conventional Commit](https://www.conventionalcommits.org/en/v1.0.0/) standard:
