@@ -37,7 +37,7 @@ subprojects {
         testImplementation "org.assertj:assertj-core:$assertJVersion"
     }
 
-    tasks.named('test') {
+    tasks.named('test', Test) {
         useJUnitPlatform()
     }
 }
@@ -61,7 +61,7 @@ reporting {
 }
 
 // The coverage gate and the CI badge generator parse the CSV, which is off by default.
-tasks.named('testCodeCoverageReport') {
+tasks.named('testCodeCoverageReport', JacocoReport) {
     reports {
         csv.required = true
     }
