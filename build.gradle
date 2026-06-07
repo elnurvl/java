@@ -1,4 +1,6 @@
 plugins {
+    // Gives the aggregation root a `clean` task / lifecycle (not provided by the plugins below).
+    id 'base'
     // Made available to subprojects; the root has no production code of its own.
     id 'com.diffplug.spotless' version "$spotlessPluginVersion" apply false
     // Merges per-module coverage into a single project-wide report.
@@ -38,12 +40,6 @@ subprojects {
     tasks.named('test') {
         useJUnitPlatform()
     }
-
-    tasks.named('jacocoTestReport') {
-        reports {
-            csv.required = true
-        }
-    }
 }
 
 // The aggregated report's JaCoCo tooling is resolved against the root project.
@@ -64,12 +60,9 @@ reporting {
     }
 }
 
-// Keep the legacy report path so tooling (git hooks, CI badge) stays unchanged.
+// The coverage gate and the CI badge generator parse the CSV, which is off by default.
 tasks.named('testCodeCoverageReport') {
     reports {
         csv.required = true
-        csv.outputLocation = layout.buildDirectory.file('reports/jacoco/test/jacocoTestReport.csv')
-        html.required = true
-        html.outputLocation = layout.buildDirectory.dir('reports/jacoco/test/html')
     }
 }

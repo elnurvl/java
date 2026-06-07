@@ -7,7 +7,7 @@ Java 25+ experimentation repository. The main branch is an empty template; indiv
 ./gradlew build                         # Build and run tests for every module
 ./gradlew test                          # Run all tests
 ./gradlew :shared-kernel:test --tests 'io.github.elnurvl.branchName.shared.SomeTest.methodName'  # Run a single test (scope to the owning module)
-./gradlew testCodeCoverageReport        # Aggregated coverage report across all modules at ./build/reports/jacoco/test/html
+./gradlew testCodeCoverageReport        # Aggregated coverage report across all modules at ./build/reports/jacoco/testCodeCoverageReport/html
 ./gradlew spotlessApply                 # Auto-fix formatting
 ./gradlew spotlessCheck                 # Check without fixing (useful for CI)
 ./gradlew checkstyleMain checkstyleTest # Validates the codebase against Google Java Style Guide

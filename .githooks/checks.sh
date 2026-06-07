@@ -13,7 +13,7 @@ echo "[3/4] Tests: running test suite..."
 echo "[4/4] Coverage: checking >= 80%..."
 ./gradlew testCodeCoverageReport --quiet
 
-CSV="build/reports/jacoco/test/jacocoTestReport.csv"
+CSV="build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.csv"
 if [ ! -f "$CSV" ]; then
   echo "ERROR: JaCoCo CSV report not found at $CSV"
   exit 1
