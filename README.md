@@ -14,15 +14,15 @@ A demo fintech application written in pure Java 25+ that explores **Domain-Drive
 A modular monolith structured around DDD:
 
 - Each **bounded context** is an independent Gradle module, isolated behind its own domain model.
-- Contexts never depend on each other directly. Shared building blocks live in **`common`** — the
-  shared kernel — e.g. the `Money` value object.
+- Contexts never depend on each other directly. Shared building blocks live in **`shared-kernel`**
+  — e.g. the `Money` value object.
 - The **`app`** module is the composition root: the deployable that wires the contexts together.
 
-Dependencies point inward: `app` → bounded contexts → `common`.
+Dependencies point inward: `app` → bounded contexts → `shared-kernel`.
 
 | Module                  | Type          | Responsibility                                      |
 |-------------------------|---------------|-----------------------------------------------------|
-| `common`                | shared kernel | Cross-context building blocks (`Money`, …)          |
+| `shared-kernel`         | shared kernel | Cross-context building blocks (`Money`, …)          |
 | `app`                   | assembly      | Composition root and entry point                    |
 | *(bounded contexts)*    | domain        | One module per context, added as the domain grows   |
 

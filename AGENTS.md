@@ -6,7 +6,7 @@ Java 25+ experimentation repository. The main branch is an empty template; indiv
 ```bash
 ./gradlew build                         # Build and run tests for every module
 ./gradlew test                          # Run all tests
-./gradlew :common:test --tests 'io.github.elnurvl.branchName.common.SomeTest.methodName'  # Run a single test (scope to the owning module)
+./gradlew :shared-kernel:test --tests 'io.github.elnurvl.branchName.shared.SomeTest.methodName'  # Run a single test (scope to the owning module)
 ./gradlew testCodeCoverageReport        # Aggregated coverage report across all modules at ./build/reports/jacoco/test/html
 ./gradlew spotlessApply                 # Auto-fix formatting
 ./gradlew spotlessCheck                 # Check without fixing (useful for CI)
@@ -22,14 +22,14 @@ assembly composed of independent Gradle modules.
 - **Build system:** Gradle 9.3.1, multi-module. Shared module config lives in the root
   `build.gradle` (`subprojects {}`); aggregated coverage uses `jacoco-report-aggregation`.
 - **Modules:**
-  - `common` — shared kernel (`java-library`) with building blocks reused across contexts,
+  - `shared-kernel` — shared kernel (`java-library`) with building blocks reused across contexts,
     e.g. `Money`. Bounded contexts may depend on it; it depends on no context.
   - `app` — the deployable assembly (`application` plugin) and composition root; depends on
-    `common` and on each bounded-context module.
+    `shared-kernel` and on each bounded-context module.
   - Each **bounded context** is added as its own module and wired in through `app`.
 - **Main class:** `io.github.elnurvl.branchName.Main` (in the `app` module)
 - **Base package:** `io.github.elnurvl.branchName`; the shared kernel lives under
-  `io.github.elnurvl.branchName.common`
+  `io.github.elnurvl.branchName.shared`
 - **Test stack:** JUnit 5 + Mockito + AssertJ
 - **Dependency versions:** centralized in `gradle.properties`
 

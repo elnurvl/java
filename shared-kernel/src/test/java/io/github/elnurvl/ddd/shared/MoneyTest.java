@@ -1,4 +1,4 @@
-package io.github.elnurvl.ddd.common;
+package io.github.elnurvl.ddd.shared;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
