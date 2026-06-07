@@ -4,21 +4,32 @@ Java 25+ experimentation repository. The main branch is an empty template; indiv
 
 ## Commands
 ```bash
-./gradlew build                         # Build and run tests
+./gradlew build                         # Build and run tests for every module
 ./gradlew test                          # Run all tests
-./gradlew test --tests 'io.github.elnurvl.branchName.SomeTest.methodName'  # Run a single test
-./gradlew test jacocoTestReport         # Generates a coverage report at ./build/reports/jacoco/test/html
+./gradlew :common:test --tests 'io.github.elnurvl.branchName.common.SomeTest.methodName'  # Run a single test (scope to the owning module)
+./gradlew testCodeCoverageReport        # Aggregated coverage report across all modules at ./build/reports/jacoco/test/html
 ./gradlew spotlessApply                 # Auto-fix formatting
 ./gradlew spotlessCheck                 # Check without fixing (useful for CI)
 ./gradlew checkstyleMain checkstyleTest # Validates the codebase against Google Java Style Guide
-./gradlew run                           # Run the application
+./gradlew run                           # Run the application (the `app` module)
 ```
 
 ## Architecture
 
-- **Build system:** Gradle 9.3.1 with `application` plugin
-- **Main class:** `io.github.elnurvl.branchName.Main`
-- **Base package:** `io.github.elnurvl.branchName`
+This branch is a **modular monolith** following Domain-Driven Design: a single deployable
+assembly composed of independent Gradle modules.
+
+- **Build system:** Gradle 9.3.1, multi-module. Shared module config lives in the root
+  `build.gradle` (`subprojects {}`); aggregated coverage uses `jacoco-report-aggregation`.
+- **Modules:**
+  - `common` — shared kernel (`java-library`) with building blocks reused across contexts,
+    e.g. `Money`. Bounded contexts may depend on it; it depends on no context.
+  - `app` — the deployable assembly (`application` plugin) and composition root; depends on
+    `common` and on each bounded-context module.
+  - Each **bounded context** is added as its own module and wired in through `app`.
+- **Main class:** `io.github.elnurvl.branchName.Main` (in the `app` module)
+- **Base package:** `io.github.elnurvl.branchName`; the shared kernel lives under
+  `io.github.elnurvl.branchName.common`
 - **Test stack:** JUnit 5 + Mockito + AssertJ
 - **Dependency versions:** centralized in `gradle.properties`
 
