@@ -1,5 +1,6 @@
 rootProject.name = 'java'
 
-// Modular monolith: each bounded context is its own module; `common` holds shared
-// building blocks (e.g. Money) reused across contexts.
+// Modular monolith: one deployable assembly (`app`) composed of independent modules.
+// Each bounded context is its own module; `common` holds shared building blocks (e.g. Money).
 include 'common'
+include 'app'
