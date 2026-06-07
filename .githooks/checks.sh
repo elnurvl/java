@@ -11,7 +11,7 @@ echo "[3/4] Tests: running test suite..."
 ./gradlew test --quiet
 
 echo "[4/4] Coverage: checking >= 80%..."
-./gradlew jacocoTestReport --quiet
+./gradlew testCodeCoverageReport --quiet
 
 CSV="build/reports/jacoco/test/jacocoTestReport.csv"
 if [ ! -f "$CSV" ]; then
