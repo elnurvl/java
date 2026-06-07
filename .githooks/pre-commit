@@ -3,7 +3,15 @@ set -e
 
 echo "Running pre-commit checks..."
 
+# Remember exactly what this commit staged, before checks run.
+staged_files=$(git diff --cached --name-only --diff-filter=ACMR)
+
 source "$(dirname "$0")/checks.sh"
 
-# Re-stage any files that spotless reformatted
-git diff --name-only | xargs -r git add
+# Re-stage only those originally-staged files (spotless may have reformatted them),
+# so unrelated working-tree changes are never pulled into the commit.
+if [ -n "$staged_files" ]; then
+  echo "$staged_files" | while IFS= read -r file; do
+    [ -e "$file" ] && git add -- "$file"
+  done
+fi
