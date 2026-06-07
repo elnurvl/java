@@ -1,0 +1,13 @@
+// Deployable assembly: the composition root that wires the modules into one monolith.
+plugins {
+    id("io.github.elnurvl.java-conventions")
+    application
+}
+
+application {
+    mainClass = "io.github.elnurvl.ddd.Main"
+}
+
+dependencies {
+    implementation(project(":shared-kernel"))
+}

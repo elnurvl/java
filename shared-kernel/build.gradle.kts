@@ -1,5 +1,5 @@
 // Shared kernel: building blocks (e.g. Money) reused across bounded contexts.
 plugins {
-    id 'io.github.elnurvl.java-conventions'
-    id 'java-library'
+    id("io.github.elnurvl.java-conventions")
+    `java-library`
 }
