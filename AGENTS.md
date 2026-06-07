@@ -19,8 +19,9 @@ Java 25+ experimentation repository. The main branch is an empty template; indiv
 This branch is a **modular monolith** following Domain-Driven Design: a single deployable
 assembly composed of independent Gradle modules.
 
-- **Build system:** Gradle 9.3.1, multi-module. Shared module config lives in the root
-  `build.gradle` (`subprojects {}`); aggregated coverage uses `jacoco-report-aggregation`.
+- **Build system:** Gradle 9.3.1, multi-module. Shared module config lives in a convention
+  plugin (`buildSrc/src/main/groovy/io.github.elnurvl.java-conventions.gradle`) that each module
+  applies; the root `build.gradle` only owns aggregated coverage (`jacoco-report-aggregation`).
 - **Modules:**
   - `shared-kernel` — shared kernel (`java-library`) with building blocks reused across contexts,
     e.g. `Money`. Bounded contexts may depend on it; it depends on no context.

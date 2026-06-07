@@ -1,0 +1,34 @@
+// Shared build configuration for every module in the monolith.
+plugins {
+    id 'java'
+    id 'jacoco'
+    id 'checkstyle'
+    id 'com.diffplug.spotless'
+}
+
+repositories {
+    mavenCentral()
+}
+
+spotless {
+    java {
+        googleJavaFormat()
+    }
+}
+
+checkstyle {
+    toolVersion = "$checkstyleVersion"
+    maxWarnings = 0
+    configDirectory = rootProject.layout.projectDirectory.dir('config/checkstyle')
+}
+
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+    testRuntimeOnly "org.junit.platform:junit-platform-runner"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.assertj:assertj-core:$assertJVersion"
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
+}

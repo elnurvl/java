@@ -1,45 +1,8 @@
 plugins {
-    // Gives the aggregation root a `clean` task / lifecycle (not provided by the plugins below).
+    // Gives the aggregation root a `clean` task / lifecycle.
     id 'base'
-    // Made available to subprojects; the root has no production code of its own.
-    id 'com.diffplug.spotless' version "$spotlessPluginVersion" apply false
     // Merges per-module coverage into a single project-wide report.
     id 'jacoco-report-aggregation'
-}
-
-// Shared configuration applied to every module in the monolith.
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'jacoco'
-    apply plugin: 'checkstyle'
-    apply plugin: 'com.diffplug.spotless'
-
-    repositories {
-        mavenCentral()
-    }
-
-    spotless {
-        java {
-            googleJavaFormat()
-        }
-    }
-
-    checkstyle {
-        toolVersion = "$checkstyleVersion"
-        maxWarnings = 0
-        configDirectory = rootProject.layout.projectDirectory.dir('config/checkstyle')
-    }
-
-    dependencies {
-        testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
-        testRuntimeOnly "org.junit.platform:junit-platform-runner"
-        testImplementation "org.mockito:mockito-core:$mockitoVersion"
-        testImplementation "org.assertj:assertj-core:$assertJVersion"
-    }
-
-    tasks.named('test', Test) {
-        useJUnitPlatform()
-    }
 }
 
 // The aggregated report's JaCoCo tooling is resolved against the root project.

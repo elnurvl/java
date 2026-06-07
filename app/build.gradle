@@ -1,5 +1,6 @@
 // Deployable assembly: the composition root that wires the modules into one monolith.
 plugins {
+    id 'io.github.elnurvl.java-conventions'
     id 'application'
 }
 
