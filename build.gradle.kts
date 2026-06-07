@@ -1,3 +1,7 @@
+// The cross-module aggregation API (reporting/reports, JacocoCoverageReport, jacocoAggregation)
+// is still @Incubating in Gradle; it is the sanctioned way to merge coverage, so opt in knowingly.
+@file:Suppress("UnstableApiUsage")
+
 plugins {
     // Gives the aggregation root a `clean` task / lifecycle.
     base
