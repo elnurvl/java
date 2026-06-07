@@ -7,11 +7,7 @@ repositories {
     gradlePluginPortal()
 }
 
-// Plugin versions stay centralized in the root gradle.properties, which buildSrc does not inherit.
-def rootProperties = new Properties()
-file('../gradle.properties').withInputStream { rootProperties.load(it) }
-
 dependencies {
     // Lets the convention plugin apply Spotless by id via its plugins {} block.
-    implementation "com.diffplug.spotless:spotless-plugin-gradle:${rootProperties.getProperty('spotlessPluginVersion')}"
+    implementation libs.spotless.gradle.plugin
 }

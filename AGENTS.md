@@ -32,7 +32,7 @@ assembly composed of independent Gradle modules.
 - **Base package:** `io.github.elnurvl.branchName`; the shared kernel lives under
   `io.github.elnurvl.branchName.shared`
 - **Test stack:** JUnit 5 + Mockito + AssertJ
-- **Dependency versions:** centralized in `gradle.properties`
+- **Dependency versions:** centralized in the version catalog (`gradle/libs.versions.toml`)
 
 ## Code Style
 
