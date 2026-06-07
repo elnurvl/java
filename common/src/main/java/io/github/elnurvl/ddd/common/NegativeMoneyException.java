@@ -1,4 +1,4 @@
-package io.github.elnurvl.ddd.shared;
+package io.github.elnurvl.ddd.common;
 
 /** Thrown when a {@link Money} value would be negative, which the domain forbids. */
 public class NegativeMoneyException extends IllegalArgumentException {

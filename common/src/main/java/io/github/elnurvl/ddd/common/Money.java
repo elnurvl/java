@@ -1,4 +1,4 @@
-package io.github.elnurvl.ddd.shared;
+package io.github.elnurvl.ddd.common;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

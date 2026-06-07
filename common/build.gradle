@@ -1,0 +1,4 @@
+// Shared kernel: building blocks (e.g. Money) reused across bounded contexts.
+plugins {
+    id 'java-library'
+}
