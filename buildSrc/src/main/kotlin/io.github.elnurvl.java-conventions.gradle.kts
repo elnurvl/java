@@ -30,9 +30,11 @@ checkstyle {
 
 dependencies {
     testImplementation(libs.findLibrary("junit-jupiter").get())
-    testRuntimeOnly(libs.findLibrary("junit-platform-runner").get())
+    testRuntimeOnly(libs.findLibrary("junit-platform-launcher").get())
     testImplementation(libs.findLibrary("mockito-core").get())
+    testImplementation(libs.findLibrary("mockito-junit-jupiter").get())
     testImplementation(libs.findLibrary("assertj-core").get())
+    testImplementation(libs.findLibrary("archunit-junit5").get())
 }
 
 tasks.named<Test>("test") {
