@@ -18,7 +18,8 @@ import com.tngtech.archunit.library.dependencies.SlicesRuleDefinition;
  *
  * <p>Lives in {@code app} — the composition root that depends on every module — so the import sees
  * the production classes of the whole assembly. Each top-level package under the base package is
- * one module: {@code shared} is the shared kernel and every other segment is a bounded context.
+ * one module: {@code shared} is the shared (domain) kernel, {@code platform} holds shared technical
+ * building blocks, and every other segment is a bounded context.
  */
 @AnalyzeClasses(
     packages = "io.github.elnurvl.ddd",
@@ -55,8 +56,8 @@ class ModuleBoundariesTest {
   /**
    * A bounded context exposes a published contract under {@code ..api..} and keeps everything else
    * internal. Contexts may integrate only through each other's published API (the Open Host Service
-   * / Anti-Corruption boundary), or through the shared kernel — never by reaching into another
-   * context's internals.
+   * / Anti-Corruption boundary), or through the shared kernel and shared technical platform — never
+   * by reaching into another context's internals.
    */
   @ArchTest
   static final ArchRule CONTEXTS_INTEGRATE_ONLY_VIA_PUBLISHED_API =
@@ -66,7 +67,10 @@ class ModuleBoundariesTest {
           .should()
           .notDependOnEachOther()
           .ignoreDependency(
-              alwaysTrue(), resideInAPackage("..api..").or(resideInAPackage("..shared..")));
+              alwaysTrue(),
+              resideInAPackage("..api..")
+                  .or(resideInAPackage("..shared.."))
+                  .or(resideInAPackage("..platform..")));
 
   /**
    * Within a context the dependencies point inward: {@code domain} depends on nothing, {@code
