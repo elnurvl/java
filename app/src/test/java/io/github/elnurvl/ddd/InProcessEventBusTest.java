@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
-import io.github.elnurvl.ddd.platform.event.DomainEvent;
 import io.github.elnurvl.ddd.platform.event.EventHandler;
+import io.github.elnurvl.ddd.platform.event.IntegrationEvent;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -13,11 +13,11 @@ import org.junit.jupiter.api.Test;
 /** Tests for {@link InProcessEventBus}. */
 class InProcessEventBusTest {
 
-  private record Created(String name) implements DomainEvent {}
+  private record Created(String name) implements IntegrationEvent {}
 
-  private record Deleted(String name) implements DomainEvent {}
+  private record Deleted(String name) implements IntegrationEvent {}
 
-  private static final class Recorder<E extends DomainEvent> implements EventHandler<E> {
+  private static final class Recorder<E extends IntegrationEvent> implements EventHandler<E> {
     private final List<E> received = new ArrayList<>();
 
     @Override

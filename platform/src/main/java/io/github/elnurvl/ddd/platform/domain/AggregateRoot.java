@@ -1,6 +1,5 @@
 package io.github.elnurvl.ddd.platform.domain;
 
-import io.github.elnurvl.ddd.platform.event.DomainEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
