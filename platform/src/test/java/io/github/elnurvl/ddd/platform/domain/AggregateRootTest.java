@@ -1,6 +1,7 @@
 package io.github.elnurvl.ddd.platform.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -17,6 +18,10 @@ class AggregateRootTest {
   private static final class Account extends AggregateRoot<String> {
     Account(String id) {
       super(id);
+    }
+
+    Account(String id, long version) {
+      super(id, version);
     }
 
     void open() {
@@ -70,5 +75,32 @@ class AggregateRootTest {
   @Test
   void givenSameId_whenCompared_thenEqualAsEntity() {
     assertThat(new Account("a1")).isEqualTo(new Account("a1"));
+  }
+
+  @Test
+  void givenNewAggregate_whenCreated_thenVersionIsZero() {
+    assertThat(new Account("a1").version()).isZero();
+  }
+
+  @Test
+  void givenReconstituted_whenCreated_thenCarriesPersistedVersion() {
+    assertThat(new Account("a1", 7L).version()).isEqualTo(7L);
+  }
+
+  @Test
+  void givenAggregate_whenVersionAdvanced_thenIncrementsByOne() {
+    Account account = new Account("a1", 7L);
+    account.nextVersion();
+    assertThat(account.version()).isEqualTo(8L);
+  }
+
+  @Test
+  void givenNegativeVersion_whenReconstituted_thenThrows() {
+    assertThatIllegalArgumentException().isThrownBy(() -> new Account("a1", -1L));
+  }
+
+  @Test
+  void givenDifferentVersions_whenCompared_thenStillEqualById() {
+    assertThat(new Account("a1", 1L)).isEqualTo(new Account("a1", 9L));
   }
 }
