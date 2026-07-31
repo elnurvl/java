@@ -25,6 +25,8 @@ repositories {
 }
 
 dependencies {
+    implementation("org.springframework:spring-core:7.0.8")
+    implementation("org.springframework:spring-beans:7.0.8")
     testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
     testRuntimeOnly "org.junit.platform:junit-platform-runner"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
